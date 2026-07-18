@@ -4,57 +4,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#da291c">
-  <title>マッククルー チャレンジ</title>
+  <title>マックバーガー チャレンジ</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#ffd43b;font-family:system-ui,-apple-system,sans-serif;touch-action:none;user-select:none}
     #game{display:block;width:100%;height:100%}
   </style>
 </head>
-<body>
-<canvas id="game" aria-label="マックで働くゲーム"></canvas>
+<body><canvas id="game" aria-label="ハンバーガーを作るゲーム"></canvas>
 <script>
 (()=>{
   'use strict';
-  const c=document.getElementById('game'),x=c.getContext('2d');
-  const foods=[{e:'🍔',n:'バーガー'},{e:'🍟',n:'ポテト'},{e:'🥤',n:'ドリンク'},{e:'🍗',n:'ナゲット'}];
-  const customers=['👦🏻','👧🏻','👨🏻','👩🏻','👴🏻','👵🏻','🧑🏽','👩🏽'];
-  function loadBest(){try{return +(localStorage.macCrewBest||0)}catch(_){return 0}}
-  let W,H,dpr,last=0,state='ready',score=0,lives=3,best=loadBest(),left=30,order=0,customer='👦🏻',flash='',flashT=0,shake=0,buttons=[];
-  const rnd=n=>Math.floor(Math.random()*n),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0);layout()}
-  function layout(){const gap=8,pad=12,bw=(W-pad*2-gap)/2,bh=clamp(H*.105,68,92),y=H-bh*2-gap-18;buttons=foods.map((f,i)=>({x:pad+(i%2)*(bw+gap),y:y+Math.floor(i/2)*(bh+gap),w:bw,h:bh,f}))}
-  function rr(a,b,w,h,r,fill,stroke,lw=3){x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.strokeStyle=stroke;x.lineWidth=lw;x.stroke()}}
-  function reset(){score=0;lives=3;left=30;flash='';flashT=0;newOrder();state='ready'}
-  function newOrder(){let next=rnd(foods.length);if(next===order)next=(next+1+rnd(foods.length-1))%foods.length;order=next;customer=customers[rnd(customers.length)]}
-  function start(){if(state==='over')reset();state='play'}
-  function choose(i){if(state!=='play'){start();return}if(i===order){score++;left=Math.min(30,left+1.2);flash='ピンポーン！';flashT=.55;newOrder()}else{lives--;flash='ちがうよ！';flashT=.65;shake=10;if(lives<=0)over()}}
-  function over(){state='over';best=Math.max(best,score);try{localStorage.macCrewBest=best}catch(_){}}
-  function tap(px,py){if(state!=='play'){start();return}for(let i=0;i<buttons.length;i++){const b=buttons[i];if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h){choose(i);return}}}
-  addEventListener('resize',resize);c.addEventListener('pointerdown',e=>{e.preventDefault();tap(e.clientX,e.clientY)},{passive:false});
-  function update(dt){if(state==='play'){left-=dt;if(left<=0){left=0;over()}}if(flashT>0)flashT-=dt;shake*=Math.pow(.02,dt)}
-  function bg(){
-    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#fff3b0');g.addColorStop(.52,'#ffd43b');g.addColorStop(1,'#efb800');x.fillStyle=g;x.fillRect(0,0,W,H);
-    x['fillStyle']='#da291c';x.fillRect(0,0,W,72);x['fillStyle']='#ffbc0d';x.font='900 38px system-ui';x.textAlign='left';x.fillText('M',18,50);x['fillStyle']='white';x.font='900 22px system-ui';x.fillText('マッククルー',62,45);
-    x['fillStyle']='rgba(255,255,255,.7)';for(let i=0;i<5;i++){x.beginPath();x.arc((i+.5)*W/5,105+(i%2)*20,30,0,7);x.fill()}
-    x['fillStyle']='#8b4d24';x.fillRect(0,H*.53,W,24);x['fillStyle']='#f2e2b6';x.fillRect(0,H*.53+24,W,H*.16);
-  }
-  function scene(){
-    const cy=H*.34;x.textAlign='center';x.font=`${clamp(W*.23,76,112)}px system-ui`;x.fillText(customer,W*.27,cy+34);
-    rr(W*.48,105,W*.46,clamp(H*.27,150,225),24,'#fff','#da291c',5);
-    x['fillStyle']='#333';x.font='900 16px system-ui';x.fillText('ごちゅうもん',W*.71,136);
-    x.font=`${clamp(W*.19,66,96)}px system-ui`;x.fillText(foods[order].e,W*.71,222);
-    x['fillStyle']='#da291c';x.font='900 19px system-ui';x.fillText(foods[order].n+' おねがい！',W*.71,260);
-    x['fillStyle']='#333';x.font='900 20px system-ui';x.textAlign='left';x.fillText('スコア '+score,14,101);x.textAlign='right';x.fillText('❤️'.repeat(lives),W-14,101);
-    x.textAlign='center';x.fillStyle=left<8?'#da291c':'#222';x.font='900 25px system-ui';x.fillText('⏱ '+Math.ceil(left),W/2,H*.53+57);
-    for(const b of buttons){rr(b.x,b.y,b.w,b.h,18,'#fff','#c88f00',4);x.font=`${Math.min(42,b.h*.48)}px system-ui`;x.fillText(b.f.e,b.x+b.w*.25,b.y+b.h*.62);x['fillStyle']='#333';x.font='900 16px system-ui';x.fillText(b.f.n,b.x+b.w*.68,b.y+b.h*.57)}
-    if(flashT>0){x.save();x.globalAlpha=Math.min(1,flashT*4);x.fillStyle=flash.startsWith('ピ')?'#15823b':'#da291c';x.font='900 34px system-ui';x['strokeStyle']='white';x.lineWidth=7;x.strokeText(flash,W/2,H*.49);x.fillText(flash,W/2,H*.49);x.restore()}
-  }
-  function overlay(){if(state==='play')return;x['fillStyle']='rgba(80,20,0,.62)';x.fillRect(0,0,W,H);rr(W*.08,H*.2,W*.84,H*.45,28,'#fff','#da291c',6);x.textAlign='center';x['fillStyle']='#da291c';x.font='900 28px system-ui';x.fillText(state==='over'?'おしごと おわり！':'マックで はたらこう！',W/2,H*.28);x.font='72px system-ui';x.fillText('🍔👨‍🍳🍟',W/2,H*.4);x['fillStyle']='#333';x.font='900 19px system-ui';if(state==='over'){x.fillText('スコア: '+score+'　ベスト: '+best,W/2,H*.49)}else{x.fillText('注文と同じボタンをタップ！',W/2,H*.49);x.fillText('30秒でいっぱい作ろう',W/2,H*.535)}rr(W*.22,H*.565,W*.56,54,27,'#ffbc0d','#a86b00',3);x['fillStyle']='#5b3500';x.font='900 20px system-ui';x.fillText(state==='over'?'もう一回！':'おしごとスタート！',W/2,H*.565+35)}
-  function draw(){x.save();if(shake>1)x.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);bg();scene();overlay();x.restore()}
-  function loop(t){const dt=Math.min((t-last)/1000||0,.05);last=t;update(dt);draw();requestAnimationFrame(loop)}
-  resize();reset();requestAnimationFrame(loop);
+  const c=document.getElementById('game'),g=c.getContext('2d');
+  const items=[
+    {e:'🍞',n:'バンズ',k:'bun'}, {e:'🥩',n:'おにく',k:'meat'},
+    {e:'🧀',n:'チーズ',k:'cheese'}, {e:'🥬',n:'レタス',k:'lettuce'},
+    {e:'🍅',n:'トマト',k:'tomato'}, {e:'🥒',n:'ピクルス',k:'pickle'}
+  ];
+  const recipes=[
+    {n:'ハンバーガー',a:['bun','meat','pickle','bun']},
+    {n:'チーズバーガー',a:['bun','meat','cheese','pickle','bun']},
+    {n:'ビッグバーガー',a:['bun','lettuce','meat','cheese','tomato','bun']}
+  ];
+  let W,H,dpr,last=0,state='ready',score=0,lives=3,left=45,recipe=recipes[0],built=[],buttons=[],flash='',flashT=0,shake=0;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function rr(x,y,w,h,r,fill,stroke,lw=3){g.beginPath();g.roundRect(x,y,w,h,r);if(fill){g.fillStyle=fill;g.fill()}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw;g.stroke()}}
+  function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';g.setTransform(dpr,0,0,dpr,0,0);layout()}
+  function layout(){const pad=10,gap=7,bw=(W-pad*2-gap*2)/3,bh=clamp(H*.09,62,78),y=H-bh*2-gap-16;buttons=items.map((it,i)=>({x:pad+(i%3)*(bw+gap),y:y+Math.floor(i/3)*(bh+gap),w:bw,h:bh,it}))}
+  function next(){recipe=recipes[Math.floor(Math.random()*recipes.length)];built=[];flash=recipe.n+'を作って！';flashT=1.2}
+  function start(){state='play';score=0;lives=3;left=45;built=[];last=performance.now();next()}
+  function choose(k){if(state!=='play'){start();return}const want=recipe.a[built.length];if(k===want){built.push(k);flash='いいね！';flashT=.5;if(built.length===recipe.a.length){score++;flash='できあがり！';flashT=.8;setTimeout(()=>{if(state==='play')next()},420)}}else{lives--;shake=10;flash='ちがうよ！';flashT=.7;if(lives<=0)state='over'}}
+  function tap(px,py){if(state!=='play'){start();return}for(const b of buttons)if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h){choose(b.it.k);return}}
+  c.addEventListener('pointerdown',e=>{e.preventDefault();tap(e.clientX,e.clientY)},{passive:false});addEventListener('resize',resize);
+  function update(dt){if(state==='play'){left-=dt;if(left<=0){left=0;state='over'}}if(flashT>0)flashT-=dt;shake*=.82}
+  function bg(){g.fillStyle='#ffd43b';g.fillRect(0,0,W,H);g.fillStyle='#da291c';g.fillRect(0,0,W,66);g.fillStyle='#fff';g.textAlign='center';g.font='900 25px system-ui';g.fillText('🍔 バーガー チャレンジ',W/2,42);g.fillStyle='#fff7df';g.fillRect(0,66,W,H-66);g.fillStyle='#f2d29b';g.fillRect(0,H*.52,W,H*.19);for(let x=0;x<W;x+=55){g.fillStyle=x%110?'#e7bf83':'#f5dda9';g.fillRect(x,H*.52,55,H*.19)}}
+  function itemFor(k){return items.find(i=>i.k===k)}
+  function order(){rr(12,78,W-24,112,18,'#fff','#da291c',4);g.fillStyle='#5b2a1e';g.textAlign='center';g.font='900 19px system-ui';g.fillText('ご注文：'+recipe.n,W/2,106);g.font='26px system-ui';const step=clamp((W-50)/recipe.a.length,42,58),sx=W/2-step*(recipe.a.length-1)/2;recipe.a.forEach((k,i)=>{g.globalAlpha=i<built.length?.35:1;g.fillText(itemFor(k).e,sx+i*step,149)});g.globalAlpha=1;g.font='800 13px system-ui';g.fillStyle='#7a4a36';g.fillText('左から順番にタップ！',W/2,176)}
+  function burger(){const cx=W/2,base=H*.49;g.save();g.translate(shake?(Math.random()-.5)*shake:0,0);g.textAlign='center';if(!built.length){g.font='20px system-ui';g.fillStyle='#85654e';g.fillText('ここにバーガーを作ろう',cx,base-15)}built.forEach((k,i)=>{g.font='46px system-ui';g.fillText(itemFor(k).e,cx,base-i*33)});g.restore();if(flashT>0){rr(W*.18,H*.31,W*.64,44,18,'rgba(255,255,255,.95)','#ffb000',3);g.fillStyle='#b21f15';g.font='900 17px system-ui';g.fillText(flash,W/2,H*.31+29)}}
+  function ui(){g.textAlign='left';g.fillStyle='#5b2a1e';g.font='900 17px system-ui';g.fillText('できた：'+score+'こ',14,216);g.textAlign='center';g.fillText('❤️'.repeat(Math.max(0,lives)),W/2,216);g.textAlign='right';g.fillText('⏰ '+Math.ceil(left),W-14,216);for(const b of buttons){rr(b.x,b.y,b.w,b.h,15,'#fff','#da291c',3);g.textAlign='center';g.font=`${Math.min(31,b.h*.45)}px system-ui`;g.fillText(b.it.e,b.x+b.w/2,b.y+b.h*.48);g.fillStyle='#5b2a1e';g.font='900 12px system-ui';g.fillText(b.it.n,b.x+b.w/2,b.y+b.h*.78)}}
+  function overlay(){if(state==='play')return;g.fillStyle='rgba(50,18,8,.68)';g.fillRect(0,0,W,H);rr(W*.1,H*.28,W*.8,H*.3,24,'#fff','#ffd43b',5);g.textAlign='center';g.fillStyle='#da291c';g.font='900 28px system-ui';g.fillText(state==='ready'?'ハンバーガーを作ろう！':'おしごと終了！',W/2,H*.35);g.fillStyle='#4b2a20';g.font='800 18px system-ui';g.fillText(state==='ready'?'注文どおりに材料をタップ':'できたバーガー：'+score+'こ',W/2,H*.405);g.font='900 21px system-ui';g.fillStyle='#fff';rr(W*.22,H*.47,W*.56,58,18,'#da291c');g.fillText(state==='ready'?'スタート':'もう一回',W/2,H*.47+38)}
+  function draw(){bg();order();burger();ui();overlay()}
+  function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}
+  resize();next();requestAnimationFrame(loop);
 })();
-</script>
-</body>
-</html>
+</script></body></html>
