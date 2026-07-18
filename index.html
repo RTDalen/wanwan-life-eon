@@ -3,36 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#84d8ff">
-  <title>わんこライフ</title>
+  <meta name="theme-color" content="#da291c">
+  <title>マッククルー チャレンジ</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#84d8ff;font-family:system-ui,-apple-system,sans-serif;touch-action:none;user-select:none}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#ffd43b;font-family:system-ui,-apple-system,sans-serif;touch-action:none;user-select:none}
     #game{display:block;width:100%;height:100%}
   </style>
 </head>
-<body><canvas id="game" aria-label="犬を飼うゲーム"></canvas>
+<body>
+<canvas id="game" aria-label="マックで働くゲーム"></canvas>
 <script>
 (()=>{
   'use strict';
-  const c=document.getElementById('game'),g=c.getContext('2d');
-  const acts=[{e:'🍖',n:'ごはん',k:'food'},{e:'🫧',n:'おふろ',k:'clean'},{e:'🎾',n:'あそぶ',k:'fun'},{e:'🤚',n:'なでる',k:'love'}];
-  let W,H,dpr,last=0,time=0,food=72,clean=78,fun=70,love=75,level=1,stars=0,msg='いっしょに あそぼう！',msgT=0,buttons=[],hearts=[];
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';g.setTransform(dpr,0,0,dpr,0,0);layout()}
-  function layout(){const pad=12,gap=9,bw=(W-pad*2-gap)/2,bh=clamp(H*.095,66,84),y=H-bh*2-gap-18;buttons=acts.map((a,i)=>({x:pad+(i%2)*(bw+gap),y:y+Math.floor(i/2)*(bh+gap),w:bw,h:bh,a}))}
-  function rr(x,y,w,h,r,fill,stroke,lw=3){g.beginPath();g.roundRect(x,y,w,h,r);if(fill){g.fillStyle=fill;g.fill()}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw;g.stroke()}}
-  function say(s){msg=s;msgT=1.5;for(let i=0;i<8;i++)hearts.push({x:W*.5+(Math.random()-.5)*70,y:H*.49,vx:(Math.random()-.5)*55,vy:-45-Math.random()*55,t:1,e:Math.random()<.65?'💖':'✨'})}
-  function action(k){if(k==='food'){food=clamp(food+24,0,100);say('おいしい！ ワン！')}if(k==='clean'){clean=clamp(clean+27,0,100);say('ピカピカになった！')}if(k==='fun'){fun=clamp(fun+25,0,100);food=clamp(food-3,0,100);say('ボールだいすき！')}if(k==='love'){love=clamp(love+22,0,100);say('もっと なでて〜！')}stars++;if(stars%8===0){level++;say('レベルアップ！ ⭐')}}
-  function tap(px,py){for(const b of buttons)if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h){action(b.a.k);return}}
-  c.addEventListener('pointerdown',e=>{e.preventDefault();tap(e.clientX,e.clientY)},{passive:false});addEventListener('resize',resize);
-  function update(dt){time+=dt;const slow=dt*.19;food=clamp(food-slow,0,100);clean=clamp(clean-slow*.55,0,100);fun=clamp(fun-slow*.8,0,100);love=clamp(love-slow*.65,0,100);if(msgT>0)msgT-=dt;for(const h of hearts){h.x+=h.vx*dt;h.y+=h.vy*dt;h.t-=dt*.8}hearts=hearts.filter(h=>h.t>0)}
-  function sky(){const q=g.createLinearGradient(0,0,0,H);q.addColorStop(0,'#79d8ff');q.addColorStop(.7,'#dff7ff');q.addColorStop(1,'#9bdb69');g.fillStyle=q;g.fillRect(0,0,W,H);g['fillStyle']='rgba(255,255,255,.82)';for(let i=0;i<4;i++){g.beginPath();g.arc(45+i*W*.29,96+(i%2)*23,26,0,7);g.fill()}g['fillStyle']='#6dcc58';g.fillRect(0,H*.57,W,H*.18);g['fillStyle']='#61bd4d';for(let x=0;x<W;x+=28){g.beginPath();g.moveTo(x,H*.57);g.lineTo(x+14,H*.53);g.lineTo(x+28,H*.57);g.fill()}g['fillStyle']='#d5b37a';g.fillRect(0,H*.67,W,H*.15)}
-  function meter(x,y,w,label,emoji,val,color){g['fillStyle']='#263238';g.font='800 13px system-ui';g.textAlign='left';g.fillText(emoji+' '+label,x,y-5);rr(x,y,w,13,7,'rgba(255,255,255,.8)','#fff',2);rr(x+2,y+2,(w-4)*val/100,9,5,color)}
-  function dog(){const bob=Math.sin(time*3)*4,dx=W*.5,dy=H*.43+bob;g.save();g.translate(dx,dy);g.textAlign='center';g.font=`${clamp(W*.29,102,138)}px system-ui`;g.fillText('🐶',0,22);g.font='32px system-ui';g.fillText(fun<25?'😿':food<25?'🥺':'',0,62);g.restore();g['fillStyle']='rgba(255,255,255,.93)';rr(W*.16,H*.235,W*.68,54,20,'rgba(255,255,255,.93)','#4a9bda',3);g['fillStyle']='#28536f';g.textAlign='center';g.font='900 17px system-ui';g.fillText(msg,W*.5,H*.235+34)}
-  function ui(){g['fillStyle']='#28536f';g.textAlign='left';g.font='900 28px system-ui';g.fillText('🐾 わんこライフ',16,43);g.textAlign='right';g.font='900 17px system-ui';g.fillText('Lv.'+level+'  ⭐'+stars,W-14,42);const mw=(W-38)/2;meter(12,69,mw,'ごはん','🍖',food,'#ff9a3c');meter(26+mw,69,mw,'きれい','🫧',clean,'#5bc8f5');meter(12,105,mw,'たのしい','🎾',fun,'#8ccf4f');meter(26+mw,105,mw,'なかよし','💖',love,'#ff6fae');for(const b of buttons){rr(b.x,b.y,b.w,b.h,18,'rgba(255,255,255,.94)','#4a9bda',4);g.textAlign='center';g.font=`${Math.min(38,b.h*.47)}px system-ui`;g.fillText(b.a.e,b.x+b.w*.25,b.y+b.h*.62);g['fillStyle']='#28536f';g.font='900 17px system-ui';g.fillText(b.a.n,b.x+b.w*.67,b.y+b.h*.57)}for(const h of hearts){g.save();g.globalAlpha=h.t;g.font='23px system-ui';g.fillText(h.e,h.x,h.y);g.restore()}}
-  function draw(){sky();dog();ui()}
+  const c=document.getElementById('game'),x=c.getContext('2d');
+  const foods=[{e:'🍔',n:'バーガー'},{e:'🍟',n:'ポテト'},{e:'🥤',n:'ドリンク'},{e:'🍗',n:'ナゲット'}];
+  const customers=['👦🏻','👧🏻','👨🏻','👩🏻','👴🏻','👵🏻','🧑🏽','👩🏽'];
+  function loadBest(){try{return +(localStorage.macCrewBest||0)}catch(_){return 0}}
+  let W,H,dpr,last=0,state='ready',score=0,lives=3,best=loadBest(),left=30,order=0,customer='👦🏻',flash='',flashT=0,shake=0,buttons=[];
+  const rnd=n=>Math.floor(Math.random()*n),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0);layout()}
+  function layout(){const gap=8,pad=12,bw=(W-pad*2-gap)/2,bh=clamp(H*.105,68,92),y=H-bh*2-gap-18;buttons=foods.map((f,i)=>({x:pad+(i%2)*(bw+gap),y:y+Math.floor(i/2)*(bh+gap),w:bw,h:bh,f}))}
+  function rr(a,b,w,h,r,fill,stroke,lw=3){x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.strokeStyle=stroke;x.lineWidth=lw;x.stroke()}}
+  function reset(){score=0;lives=3;left=30;flash='';flashT=0;newOrder();state='ready'}
+  function newOrder(){let next=rnd(foods.length);if(next===order)next=(next+1+rnd(foods.length-1))%foods.length;order=next;customer=customers[rnd(customers.length)]}
+  function start(){if(state==='over')reset();state='play'}
+  function choose(i){if(state!=='play'){start();return}if(i===order){score++;left=Math.min(30,left+1.2);flash='ピンポーン！';flashT=.55;newOrder()}else{lives--;flash='ちがうよ！';flashT=.65;shake=10;if(lives<=0)over()}}
+  function over(){state='over';best=Math.max(best,score);try{localStorage.macCrewBest=best}catch(_){}}
+  function tap(px,py){if(state!=='play'){start();return}for(let i=0;i<buttons.length;i++){const b=buttons[i];if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h){choose(i);return}}}
+  addEventListener('resize',resize);c.addEventListener('pointerdown',e=>{e.preventDefault();tap(e.clientX,e.clientY)},{passive:false});
+  function update(dt){if(state==='play'){left-=dt;if(left<=0){left=0;over()}}if(flashT>0)flashT-=dt;shake*=Math.pow(.02,dt)}
+  function bg(){
+    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#fff3b0');g.addColorStop(.52,'#ffd43b');g.addColorStop(1,'#efb800');x.fillStyle=g;x.fillRect(0,0,W,H);
+    x['fillStyle']='#da291c';x.fillRect(0,0,W,72);x['fillStyle']='#ffbc0d';x.font='900 38px system-ui';x.textAlign='left';x.fillText('M',18,50);x['fillStyle']='white';x.font='900 22px system-ui';x.fillText('マッククルー',62,45);
+    x['fillStyle']='rgba(255,255,255,.7)';for(let i=0;i<5;i++){x.beginPath();x.arc((i+.5)*W/5,105+(i%2)*20,30,0,7);x.fill()}
+    x['fillStyle']='#8b4d24';x.fillRect(0,H*.53,W,24);x['fillStyle']='#f2e2b6';x.fillRect(0,H*.53+24,W,H*.16);
+  }
+  function scene(){
+    const cy=H*.34;x.textAlign='center';x.font=`${clamp(W*.23,76,112)}px system-ui`;x.fillText(customer,W*.27,cy+34);
+    rr(W*.48,105,W*.46,clamp(H*.27,150,225),24,'#fff','#da291c',5);
+    x['fillStyle']='#333';x.font='900 16px system-ui';x.fillText('ごちゅうもん',W*.71,136);
+    x.font=`${clamp(W*.19,66,96)}px system-ui`;x.fillText(foods[order].e,W*.71,222);
+    x['fillStyle']='#da291c';x.font='900 19px system-ui';x.fillText(foods[order].n+' おねがい！',W*.71,260);
+    x['fillStyle']='#333';x.font='900 20px system-ui';x.textAlign='left';x.fillText('スコア '+score,14,101);x.textAlign='right';x.fillText('❤️'.repeat(lives),W-14,101);
+    x.textAlign='center';x.fillStyle=left<8?'#da291c':'#222';x.font='900 25px system-ui';x.fillText('⏱ '+Math.ceil(left),W/2,H*.53+57);
+    for(const b of buttons){rr(b.x,b.y,b.w,b.h,18,'#fff','#c88f00',4);x.font=`${Math.min(42,b.h*.48)}px system-ui`;x.fillText(b.f.e,b.x+b.w*.25,b.y+b.h*.62);x['fillStyle']='#333';x.font='900 16px system-ui';x.fillText(b.f.n,b.x+b.w*.68,b.y+b.h*.57)}
+    if(flashT>0){x.save();x.globalAlpha=Math.min(1,flashT*4);x.fillStyle=flash.startsWith('ピ')?'#15823b':'#da291c';x.font='900 34px system-ui';x['strokeStyle']='white';x.lineWidth=7;x.strokeText(flash,W/2,H*.49);x.fillText(flash,W/2,H*.49);x.restore()}
+  }
+  function overlay(){if(state==='play')return;x['fillStyle']='rgba(80,20,0,.62)';x.fillRect(0,0,W,H);rr(W*.08,H*.2,W*.84,H*.45,28,'#fff','#da291c',6);x.textAlign='center';x['fillStyle']='#da291c';x.font='900 28px system-ui';x.fillText(state==='over'?'おしごと おわり！':'マックで はたらこう！',W/2,H*.28);x.font='72px system-ui';x.fillText('🍔👨‍🍳🍟',W/2,H*.4);x['fillStyle']='#333';x.font='900 19px system-ui';if(state==='over'){x.fillText('スコア: '+score+'　ベスト: '+best,W/2,H*.49)}else{x.fillText('注文と同じボタンをタップ！',W/2,H*.49);x.fillText('30秒でいっぱい作ろう',W/2,H*.535)}rr(W*.22,H*.565,W*.56,54,27,'#ffbc0d','#a86b00',3);x['fillStyle']='#5b3500';x.font='900 20px system-ui';x.fillText(state==='over'?'もう一回！':'おしごとスタート！',W/2,H*.565+35)}
+  function draw(){x.save();if(shake>1)x.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);bg();scene();overlay();x.restore()}
   function loop(t){const dt=Math.min((t-last)/1000||0,.05);last=t;update(dt);draw();requestAnimationFrame(loop)}
-  resize();requestAnimationFrame(loop);
+  resize();reset();requestAnimationFrame(loop);
 })();
-</script></body></html>
+</script>
+</body>
+</html>
